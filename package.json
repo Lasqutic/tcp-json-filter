@@ -1,0 +1,22 @@
+{
+  "name": "tcp-json-filter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lasqutic/tcp-json-filter.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Lasqutic/tcp-json-filter/issues"
+  },
+  "homepage": "https://github.com/Lasqutic/tcp-json-filter#readme"
+}

@@ -1,0 +1,42 @@
+import fsp from 'fs/promises';
+
+export default class JsonFilter {
+    constructor(pathToJson) {
+        this.pathToJson = pathToJson;
+    }
+
+    async readAndFilterJson(filterObj) {
+        try {
+            const data = await fsp.readFile(this.pathToJson, 'utf8');
+            const parsed = JSON.parse(data);
+            return this.#filter(parsed, filterObj);
+        } catch (err) {
+            console.error('Read/parse error:', err.message);
+            return [];
+        }
+    }
+
+    #filter(dataArray, filter) {
+        return dataArray.filter(obj => this.#matches(obj, filter));
+    }
+
+    #matches(obj, filter) {
+        if (typeof obj !== 'object' || obj === null) return false;
+
+        for (const key in filter) {
+            const filterValue = filter[key];
+            const objValue = obj[key];
+
+            if (typeof filterValue === 'object' && filterValue !== null) {
+                if (!this.#matches(objValue, filterValue)) return false;
+            } else {
+    
+                if (typeof objValue !== 'string' || !objValue.includes(filterValue)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+}
