@@ -1,32 +1,29 @@
 import { Socket } from 'net';
+import { LineSplitter } from './lineSplitter.js';
 
 const filterValueObj = {
-    name: {last:"Sm"}
+    name: { last: "Sm" }
 };
 
 const client = new Socket();
-let buffer = '';
 
 client.connect(8080, () => {
-    console.log('Connected');
+    console.log('Connected to server');
     client.write(JSON.stringify(filterValueObj) + '\n');
 });
 
-client.on('data', (chunk) => {
-    buffer += chunk.toString();
+const lineSplitter = new LineSplitter();
+client.pipe(lineSplitter);
 
-    let boundary;
-    while ((boundary = buffer.indexOf('\n')) !== -1) {
-        const jsonStr = buffer.slice(0, boundary);
-        buffer = buffer.slice(boundary + 1);
+lineSplitter.on('data', (line) => {
 
-        const response = JSON.parse(jsonStr);
-        if (response.error) {
-            console.log('Server response error:', response.error);
-        } else {
-            console.log('Server response:', response);
-        }
+    const response = JSON.parse(line);
+    if (response.error) {
+        console.log('Server response error:', response.error);
+    } else {
+        console.log('Server response:', response);
     }
+
 });
 
 client.on('close', () => {
