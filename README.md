@@ -56,6 +56,7 @@ tcp-json-filter/
 │
 └── src/
     ├── components/
+    │   ├── index.js               # exports 
     │   ├── jsonFilter.js          # Data filtering logic
     │   ├── jsonToCsvConverter.js  # Stream transformer: JSON → CSV
     │   ├── requestValidator.js    # Request validation logic
