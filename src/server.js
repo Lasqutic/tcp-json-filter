@@ -1,9 +1,7 @@
 import net from 'net';
 import { Readable, Transform, pipeline } from 'stream';
 import zlib from 'zlib';
-import JsonFilter from './components/jsonFilter.js';
-import RequestValidator from './components/requestValidator.js';
-import JsonToCsvConverter from './components/jsonToCsvConverter.js';
+import { JsonFilter, JsonToCsvConverter, RequestValidator } from './components/index.js';
 
 export default class Server {
     constructor(port, pathToJson) {
