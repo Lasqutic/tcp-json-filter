@@ -1,7 +1,9 @@
 import net from 'net';
 import JsonFilter from './JsonFilter.js';
-import FilterValidator from './FilterValidator.js';
-import { LineSplitter } from './lineSplitter.js';
+import RequestValidator from './requestValidator.js';
+import JsonToCsvConverter from './jsonToCsvConverter.js';
+import { Readable, Transform, pipeline } from 'stream';
+import zlib from 'zlib';
 
 const server = net.createServer();
 const PORT = 8080;
@@ -10,27 +12,61 @@ const PATH_TO_JSON = './data/users.json';
 server.on('connection', (socket) => {
     console.log('New client connected');
 
-    const lineSplitter = new LineSplitter();
-    socket.pipe(lineSplitter);
+    let buffer = '';
 
+    socket.on('data', async chunk => {
+        buffer += chunk.toString();
 
-    lineSplitter.on('data', async (line) => {
+        let index;
+        while ((index = buffer.indexOf('\n')) !== -1) {
+            const rawClientMessage = buffer.slice(0, index);
+            buffer = buffer.slice(index + 1);
 
-        try {
-            const filterValueObj = JSON.parse(line);
+            try {
 
-            const validator = new FilterValidator();
-            validator.validate(filterValueObj);
+                const clientObjFilter = JSON.parse(rawClientMessage);
+                new RequestValidator().validate(clientObjFilter);
 
-            const jsonFilter = new JsonFilter(PATH_TO_JSON);
-            const filtered = await jsonFilter.readAndFilterJson(filterValueObj);
+                const jsonFilter = new JsonFilter(PATH_TO_JSON);
+                const filtered = await jsonFilter.readAndFilterJson(clientObjFilter.filter);
 
-            socket.write(JSON.stringify(filtered) + '\n');
-        } catch (err) {
-            const errorMessage = { error: err.message };
-            socket.write(JSON.stringify(errorMessage) + '\n');
+                const dataStream = Readable.from(filtered, { objectMode: true });
+
+                const streams = [dataStream];
+
+                if (clientObjFilter.meta.format === 'csv') {
+                    streams.push(new JsonToCsvConverter());
+                } else {
+                    streams.push(new Transform({
+                        writableObjectMode: true,
+                        transform(obj, _, cb) {
+                            console.log(obj)
+                            this.push(JSON.stringify(obj) + '\n');
+                            cb();
+                        }
+                    }));
+                }
+
+                if (clientObjFilter.meta.archive) {
+                    streams.push(zlib.createGzip());
+                }
+
+                pipeline(
+                    ...streams,
+                    socket,
+                    (err) => {
+                        if (err) {
+                            console.log('Pipeline error:', err);
+                        } else {
+                            console.log('Pipeline finished');
+                        }
+                    }
+                );
+            } catch (err) {
+                socket.write(JSON.stringify({ error: err.message }) + '\n');
+                socket.end();
+            }
         }
-
     });
 
     socket.on('end', () => {

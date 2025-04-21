@@ -11,8 +11,7 @@ export default class JsonFilter {
             const parsed = JSON.parse(data);
             return this.#filter(parsed, filterObj);
         } catch (err) {
-            console.error('Read/parse error:', err.message);
-            return [];
+            throw new Error(`Read/parse Json file error: ${err.message}`);
         }
     }
 
