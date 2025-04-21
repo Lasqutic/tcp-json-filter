@@ -1,5 +1,5 @@
 import net from 'net';
-import JsonFilter from './JsonFilter.js';
+import JsonFilter from './jsonFilter.js';
 import RequestValidator from './requestValidator.js';
 import JsonToCsvConverter from './jsonToCsvConverter.js';
 import { Readable, Transform, pipeline } from 'stream';
