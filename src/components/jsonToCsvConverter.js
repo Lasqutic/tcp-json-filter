@@ -22,9 +22,9 @@ export default class JsonToCsvConverter extends Transform {
 
                 value = String(value ?? '').replace(/"/g, '""');
 
-                if (value.includes(',') || value.includes(';') 
+                if (value.includes(',') || value.includes(';')
                     || value.includes('"') || value.includes('\n')) {
-                
+
                     value = `"${value}"`;
                 }
 
@@ -32,7 +32,6 @@ export default class JsonToCsvConverter extends Transform {
             });
 
             const line = values.join(';') + '\n';
-            console.log(line);
             this.push(line);
             callback();
         } catch (err) {
@@ -43,9 +42,9 @@ export default class JsonToCsvConverter extends Transform {
     #extractHeaders(obj, parent = '', headers = []) {
 
         for (const key in obj) {
-            
+
             const fullPath = parent ? `${parent}.${key}` : key;
-            
+
             if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
                 this.#extractHeaders(obj[key], fullPath, headers);
             } else {
@@ -56,15 +55,16 @@ export default class JsonToCsvConverter extends Transform {
     }
 
     #getValueByPath(obj, path) {
-      
+
         const parts = path.split('.');
         let current = obj;
-      
+
         for (const part of parts) {
             if (current == null || typeof current !== 'object') return undefined;
-           
+
             current = current[part];
         }
         return current;
+
     }
 }

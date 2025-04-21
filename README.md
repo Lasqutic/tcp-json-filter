@@ -1,115 +1,145 @@
-# JSON Filter & CSV Converter over TCP
+# My TCP Filter Server 📡
 
 ## Description
 
-This project demonstrates a Node.js TCP client-server system that allows clients to send filtering criteria to the server. The server reads a local JSON file (`data/users.json`), filters its content based on the client's request, optionally converts it to JSON or CSV format, and optionally compresses the result with Gzip before sending it back to the client.
-
-Key features:
-- Deep filtering support for nested JSON (e.g. `name.last` or `address.city`)
-- Format options: JSON or CSV
-- Optional Gzip compression
-
----
+This project implements a TCP-based server/client architecture using Node.js Streams. Clients can send a JSON request to the server, which validates and filters data from a local `users.json` file. Depending on the client's metadata, the filtered data is returned in either JSON or CSV format, optionally compressed using gzip.
 
 ## Expected Output
 
-When running the server and client with the provided code and sending the following request:
-
-```js
-const filterValueObj = {
-    filter: { name: { last: 'Smith' } },
-    meta: {
-        format: 'csv',
-        archive: false
-    }
-};
-```
-
-You should see the following output in the client console:
+### Terminal output (server + client):
 
 ```bash
+Server listening on port 8080
+New client connected
+New client connected
+Pipeline finished
+Pipeline finished
 Connected to server
 Received CSV:
 id;name.first;name.last;phone;address.zip;address.city;address.country;address.street;email
-0;Ron;Smith;615-245-4689;10496-0178;West Garfieldview;Kuwait;10984 Alanna Points;annabell11.hackett@hotmail.com
-0;Ron;Smitham;615-246-4689;2096-0178;South Garfieldview;Kuwait;204984 Alanna Points;annabell22.hackett@hotmail.com
-353;Nathen;Smitham;939-993-9588;03338;Port Louisa;Vietnam;9725 Karina Skyway;teagan_bradtke@yahoo.com
-446;Sydney;Smith;117-670-9700;96796;Faychester;Sudan;742 Janis Ford;teagan_conroy@gmail.com
-496;Lenore;Smitham;978-878-8131;78059-6572;Lake Lonieshire;Papua New Guinea;0510 Toby Oval;arjun_turner@hotmail.com
+1;Cristobal;Mueller;189-966-8555;20310-8129;Lake Elmiraburgh;Germany;12233 Glover Meadows;lyric.witting@hotmail.com
+
+Connection closed
+Connected to server
+Successfully decompressed
+Filtered JSON objects:
+[
+  {
+    "id": 1,
+    "name": {
+      "first": "Cristobal",
+      "last": "Mueller"
+    },
+    "phone": "189-966-8555",
+    "address": {
+      "zip": "20310-8129",
+      "city": "Lake Elmiraburgh",
+      "country": "Germany",
+      "street": "12233 Glover Meadows"
+    },
+    "email": "lyric.witting@hotmail.com"
+  }
+]
 
 Connection closed
 ```
 
 ---
 
-## Example Input JSON (data/users.json)
+## Project Structure
 
-```json
-[
-  {
-    "id": 0,
-    "name": {
-      "first": "Ron",
-      "last": "Smith"
-    },
-    "phone": "615-245-4689",
-    "address": {
-      "zip": "10496-0178",
-      "city": "West Garfieldview",
-      "country": "Kuwait",
-      "street": "10984 Alanna Points"
-    },
-    "email": "annabell11.hackett@hotmail.com"
-  },
-  {
-    "id": 0,
-    "name": {
-      "first": "Ron",
-      "last": "Smitham"
-    },
-    "phone": "615-246-4689",
-    "address": {
-      "zip": "2096-0178",
-      "city": "South Garfieldview",
-      "country": "Kuwait",
-      "street": "204984 Alanna Points"
-    },
-    "email": "annabell22.hackett@hotmail.com"
-  }
-]
+```
+tcp-json-filter/
+│
+├── README.md
+├── package.json
+│
+└── src/
+    ├── components/
+    │   ├── jsonFilter.js          # Data filtering logic
+    │   ├── jsonToCsvConverter.js  # Stream transformer: JSON → CSV
+    │   ├── requestValidator.js    # Request validation logic
+    │   └── responseHandler.js     # Response processing (JSON, CSV, decompression)
+    │
+    ├── data/
+    │   └── users.json             # Sample input data (array of objects)
+    │
+    ├── client.js                 # TCP client class
+    ├── index.js                  # Main entry point for app
+    └── server.js                 # TCP server class
 ```
 
 ---
 
-## Project Structure
 
-- `server.js`: TCP server logic, validates client input, filters and streams data
-- `client.js`: Sends filter/meta, receives and logs result
-- `jsonFilter.js`: Reads JSON file and filters based on nested conditions
-- `requestValidator.js`: Validates structure and types of client request
-- `jsonToCsvConverter.js`: Stream transform that flattens JSON to CSV with nested field support
+### users.json (fragment)
+```json
+[
+  {
+    "id": 1,
+    "name": { "first": "Cristobal", "last": "Mueller" },
+    "phone": "189-966-8555",
+    "address": {
+      "zip": "20310-8129",
+      "city": "Lake Elmiraburgh",
+      "country": "Germany",
+      "street": "12233 Glover Meadows"
+    },
+    "email": "lyric.witting@hotmail.com"
+  },
+  .....
+]
+```
 
+## Example: Input/Output
 
+### Sample Request Sent by Client 1 (CSV, no archive)
+```js
+{
+    filter: { phone: "189-966-8555" },
+    meta: {
+        format: 'csv',
+        archive: false
+    }
+}
+```
+
+### Sample Request Sent by Client 2 (JSON, gzipped)
+```js
+{
+    filter: { phone: "189-966-8555" },
+    meta: {
+        format: 'json',
+        archive: true
+    }
+}
+```
+### Output: CSV
+```
+id;name.first;name.last;phone;address.zip;address.city;address.country;address.street;email
+1;Cristobal;Mueller;189-966-8555;20310-8129;Lake Elmiraburgh;Germany;12233 Glover Meadows;lyric.witting@hotmail.com
+```
+
+### Output: JSON
+```json
+[
+  {
+    "id": 1,
+    "name": {
+      "first": "Cristobal",
+      "last": "Mueller"
+    },
+    "phone": "189-966-8555",
+    "address": {
+      "zip": "20310-8129",
+      "city": "Lake Elmiraburgh",
+      "country": "Germany",
+      "street": "12233 Glover Meadows"
+    },
+    "email": "lyric.witting@hotmail.com"
+  }
+]
+```
 ---
 
-## Usage
-
-1. Start the server:
-   ```bash
-   node server.js
-   ```
-
-2. Run the client:
-   ```bash
-   node client.js
-   ```
-
-3. Optionally modify the `filterValueObj` in `client.js` to test different scenarios:
-   - Filter by other fields
-   - Change output format to `json`
-   - Enable `archive: true` for gzip compression
-
----
-
-Let me know if you want an example with `archive: true` and decompression output!
 

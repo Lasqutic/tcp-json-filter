@@ -1,13 +1,13 @@
 export default class RequestValidator {
-    #allowedFormats = new Set(['csv', 'json']);
-    #allowedFields = new Set([
+    static #allowedFormats = new Set(['csv', 'json']);
+    static #allowedFields = new Set([
         'name', 'first', 'last',
         'phone',
         'address', 'zip', 'city', 'country', 'street',
         'email'
     ]);
 
-    validate(request) {
+    static validate(request) {
         if (!request || typeof request !== 'object') {
             throw new Error('Request must be an object');
         }
@@ -26,7 +26,7 @@ export default class RequestValidator {
         this.#validateMeta(meta);
     }
 
-    #validateMeta(meta) {
+    static #validateMeta(meta) {
         if (!this.#allowedFormats.has(meta.format)) {
             throw new Error('Invalid format. Allowed: csv, json');
         }
@@ -36,7 +36,7 @@ export default class RequestValidator {
         }
     }
 
-    #validateFilter(filter) {
+    static #validateFilter(filter) {
         if (Object.keys(filter).length === 0) {
             throw new Error('Filter object cannot be empty');
         }
@@ -44,7 +44,7 @@ export default class RequestValidator {
         this.#validateStructure(filter);
     }
 
-    #validateStructure(obj, parentKey = '') {
+    static #validateStructure(obj, parentKey = '') {
         for (const [key, value] of Object.entries(obj)) {
             const fullKey = parentKey ? `${parentKey}.${key}` : key;
 
