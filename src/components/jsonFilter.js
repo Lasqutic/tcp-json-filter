@@ -29,11 +29,9 @@ export default class JsonFilter {
             if (typeof filterValue === 'object' && filterValue !== null) {
                 if (!this.#matches(objValue, filterValue)) return false;
             } else if (typeof objValue !== 'string' || !objValue.includes(filterValue)) {
-                    return false;
-                }
+                return false;
             }
-        
-
+        }
         return true;
     }
 }

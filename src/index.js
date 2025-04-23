@@ -7,18 +7,18 @@ server.start();
 setTimeout(() => {
     const clientOne = new ClientApp(8080);
     clientOne.connectAndSend({
-        filter: { phone: "189-966-8555"},
+        filter: { phone: "189-966-8555" },
         meta: {
-            format: 'csv',    
-            archive: false   
+            format: 'csv',
+            archive: false
         }
     });
     const clientTwo = new ClientApp(8080);
     clientTwo.connectAndSend({
-        filter: { phone: "189-966-8555",},
+        filter: { phone: "189-966-8555", },
         meta: {
-            format: 'json',    
-            archive: true   
+            format: 'json',
+            archive: true
         }
     });
 }, 500); 
